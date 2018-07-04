@@ -1,14 +1,16 @@
 package main
 
 import (
-	"log"
-	"github.com/BurntSushi/toml"
-	"fmt"
 	"flag"
+	"fmt"
+	"github.com/BurntSushi/toml"
+	"github.com/pitshifer/api-football-client/client"
+	"log"
 )
 
 type Config struct {
-	ApiFootball struct{
+	ApiFootball struct {
+		Url string
 		Key string
 	}
 }
@@ -16,7 +18,11 @@ type Config struct {
 var config *Config
 
 func main() {
-	fmt.Printf("%#v", config)
+	apiClient := client.Create(client.Params{
+		ApiKey: config.ApiFootball.Key,
+	})
+
+	fmt.Printf("%T", apiClient)
 }
 
 func init() {
