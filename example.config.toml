@@ -1,3 +1,7 @@
-[ApiFootball]
+[log]
+file = ""
+level = "ERROR"
+
+[apiFootball]
 url = ""
 key = ""
