@@ -32,13 +32,19 @@ var config *Config
 var logger = logrus.New()
 
 func main() {
-	iniLogger(config.Log)
+	initLogger(config.Log)
 
 	apiClient := client.Create(client.Params{
 		ApiKey: config.ApiFootball.Key,
+		Url:    config.ApiFootball.Url,
 	})
 
-	fmt.Printf("%T", apiClient)
+	countries, err := apiClient.GetCountries()
+	if err != nil {
+		logger.Errorf("getting countries: %s", err)
+	}
+
+	fmt.Printf("%#v", countries)
 }
 
 func init() {
@@ -53,7 +59,7 @@ func init() {
 	}
 }
 
-func iniLogger(config LoggerConfig) {
+func initLogger(config LoggerConfig) {
 	logger.Formatter = &logrus.JSONFormatter{}
 
 	logger.SetOutput(os.Stdout)
