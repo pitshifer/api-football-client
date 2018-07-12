@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -29,21 +28,34 @@ func Create(params Params) *client {
 func (c *client) GetCountries() ([]Country, error) {
 	var countries []Country
 
-	result, err := c.request("get_countries")
+	resp, err := c.request("get_countries")
 	if err != nil {
 		return nil, fmt.Errorf("getting the countries: %s", err)
 	}
 
-	b, err := ioutil.ReadAll(result)
-
-	if err = json.Unmarshal(b, &countries); err != nil {
-		return nil, err
+	if err = json.Unmarshal(resp, &countries); err != nil {
+		return nil, fmt.Errorf("unmarshaling json: %s", err)
 	}
 
 	return countries, nil
 }
 
-func (c *client) request(action string) (io.Reader, error) {
+func (c *client) GetLeagues() ([]League, error) {
+	var leagues []League
+
+	resp, err := c.request("get_leagues")
+	if err != nil {
+		return nil, fmt.Errorf("getting the leagues: %s", err)
+	}
+
+	if err = json.Unmarshal(resp, &leagues); err != nil {
+		return nil, fmt.Errorf("unmarshaling json: %s", err)
+	}
+
+	return leagues, nil
+}
+
+func (c *client) request(action string) ([]byte, error) {
 	httpClient := &http.Client{}
 	u, err := url.Parse(c.url)
 	if err != nil {
@@ -54,13 +66,16 @@ func (c *client) request(action string) (io.Reader, error) {
 	query.Add("APIkey", c.apiKey)
 	u.RawQuery = query.Encode()
 
-	fmt.Printf("url : %s\n", u.String())
-
 	resp, err := httpClient.Get(u.String())
-	//defer resp.Body.Close()
+	defer resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.Body, nil
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
 }

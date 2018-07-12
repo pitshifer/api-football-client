@@ -44,7 +44,13 @@ func main() {
 		logger.Errorf("getting countries: %s", err)
 	}
 
-	fmt.Printf("%#v", countries)
+	leagues, err := apiClient.GetLeagues()
+	if err != nil {
+		logger.Errorf("getting leagues: %s", err)
+	}
+
+	fmt.Printf("%#v\n", countries)
+	fmt.Printf("%#v\n", leagues)
 }
 
 func init() {
