@@ -44,13 +44,25 @@ func main() {
 		logger.Errorf("getting countries: %s", err)
 	}
 
-	leagues, err := apiClient.GetLeagues()
+	leagues, err := apiClient.GetLeagues(0)
 	if err != nil {
 		logger.Errorf("getting leagues: %s", err)
 	}
 
-	fmt.Printf("%#v\n", countries)
-	fmt.Printf("%#v\n", leagues)
+	leaguesByCountry, err := apiClient.GetLeagues(170)
+	if err != nil {
+		logger.Errorf("getting leagues by country with id = 79: %s", err)
+	}
+
+	standings, err := apiClient.GetStandings(79)
+	if err != nil {
+		logger.Errorf("getting standings: %s", err)
+	}
+
+	fmt.Printf("countries: %#v\n", countries)
+	fmt.Printf("leagues: %#v\n", leagues)
+	fmt.Printf("leagues by Italy: %#v\n", leaguesByCountry)
+	fmt.Printf("standings by Serie A: %#v\n", standings)
 }
 
 func init() {
