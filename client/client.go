@@ -2,11 +2,13 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 type Params struct {
@@ -68,8 +70,8 @@ func (c *client) GetLeagues(countryId int) ([]League, error) {
 	return leagues, nil
 }
 
-func (c *client) GetStandings(leagueId int) ([]Standings, error) {
-	var standings []Standings
+func (c *client) GetStandings(leagueId int) ([]Standing, error) {
+	var standings []Standing
 	var params []requestParam
 
 	params = append(params, requestParam{
@@ -87,6 +89,52 @@ func (c *client) GetStandings(leagueId int) ([]Standings, error) {
 	}
 
 	return standings, nil
+}
+
+func (c *client) GetEvents(from, to string, countryId, leagueId, matchId int) ([]Event, error) {
+	var events []Event
+	var params []requestParam
+
+	params = []requestParam{
+		requestParam{
+			name:  "from",
+			value: from,
+		},
+		requestParam{
+			name:  "to",
+			value: to,
+		},
+	}
+
+	if countryId != 0 {
+		params = append(params, requestParam{
+			name:  "country_id",
+			value: strconv.Itoa(countryId),
+		})
+	}
+	if leagueId != 0 {
+		params = append(params, requestParam{
+			name:  "league_id",
+			value: strconv.Itoa(leagueId),
+		})
+	}
+	if matchId != 0 {
+		params = append(params, requestParam{
+			name:  "match_id",
+			value: strconv.Itoa(matchId),
+		})
+	}
+
+	resp, err := c.request("get_events", params)
+	if err != nil {
+		return nil, fmt.Errorf("getting events: %s", err)
+	}
+
+	if err = json.Unmarshal(resp, &events); err != nil {
+		return nil, fmt.Errorf("unmarshaling json: %s", err)
+	}
+
+	return events, nil
 }
 
 func (c *client) request(action string, params []requestParam) ([]byte, error) {
@@ -110,9 +158,22 @@ func (c *client) request(action string, params []requestParam) ([]byte, error) {
 		return nil, err
 	}
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New("response status: " + resp.Status)
+	}
+
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if strings.HasPrefix(string(b), "{\"error\":") {
+		var errorResponse ErrorResponse
+		if err = json.Unmarshal(b, &errorResponse); err != nil {
+			return nil, err
+		}
+
+		return nil, errors.New("error response with message: " + errorResponse.Message)
 	}
 
 	return b, nil

@@ -29,11 +29,12 @@ type LoggerConfig struct {
 	Level string
 }
 
-var config *Config
-var logger = logrus.New()
-var action string
-var countryId int
-var leagueId int
+var (
+	config                       *Config
+	logger                       = logrus.New()
+	action, from, to             string
+	countryId, leagueId, matchId int
+)
 
 func main() {
 	var err error
@@ -57,6 +58,11 @@ func main() {
 
 	case "standings":
 		result, err = apiClient.GetStandings(leagueId)
+		break
+
+	case "events":
+		result, err = apiClient.GetEvents(from, to, countryId, leagueId, matchId)
+		break
 
 	default:
 		fmt.Println("Not specified an action")
@@ -82,15 +88,18 @@ func init() {
 	var configFile string
 
 	flag.StringVar(&configFile, "c", "", "path to config file")
-	flag.StringVar(&action, "action", "asd", "action name: countries, leagues")
+	flag.StringVar(&action, "action", "", "action name: countries, leagues")
+	flag.StringVar(&from, "from", "", "date from: yyyy-mm-dd")
+	flag.StringVar(&to, "to", "", "date to: yyyy-mm-dd")
 	flag.IntVar(&countryId, "country", 0, "country ID")
 	flag.IntVar(&leagueId, "league", 0, "league ID")
+	flag.IntVar(&matchId, "match", 0, "match ID")
 
 	flag.Parse()
 
 	config = &Config{}
 	if _, err := toml.DecodeFile(configFile, &config); err != nil {
-		log.Fatalf("Cannot read config file %s: %s", flag.Arg(0), err)
+		log.Fatalf("Cannot read config file %s: %s", configFile, err)
 	}
 }
 
