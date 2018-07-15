@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/BurntSushi/toml"
@@ -30,8 +31,14 @@ type LoggerConfig struct {
 
 var config *Config
 var logger = logrus.New()
+var action string
+var countryId int
+var leagueId int
 
 func main() {
+	var err error
+	var result interface{}
+
 	initLogger(config.Log)
 
 	apiClient := client.Create(client.Params{
@@ -39,40 +46,50 @@ func main() {
 		Url:    config.ApiFootball.Url,
 	})
 
-	countries, err := apiClient.GetCountries()
-	if err != nil {
-		logger.Errorf("getting countries: %s", err)
+	switch action {
+	case "countries":
+		result, err = apiClient.GetCountries()
+		break
+
+	case "leagues":
+		result, err = apiClient.GetLeagues(countryId)
+		break
+
+	case "standings":
+		result, err = apiClient.GetStandings(leagueId)
+
+	default:
+		fmt.Println("Not specified an action")
+		os.Exit(0)
 	}
 
-	leagues, err := apiClient.GetLeagues(0)
 	if err != nil {
-		logger.Errorf("getting leagues: %s", err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
-	leaguesByCountry, err := apiClient.GetLeagues(170)
+	b, err := json.Marshal(result)
 	if err != nil {
-		logger.Errorf("getting leagues by country with id = 79: %s", err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
-	standings, err := apiClient.GetStandings(79)
-	if err != nil {
-		logger.Errorf("getting standings: %s", err)
-	}
-
-	fmt.Printf("countries: %#v\n", countries)
-	fmt.Printf("leagues: %#v\n", leagues)
-	fmt.Printf("leagues by Italy: %#v\n", leaguesByCountry)
-	fmt.Printf("standings by Serie A: %#v\n", standings)
+	fmt.Println(string(b))
+	os.Exit(0)
 }
 
 func init() {
+	var configFile string
+
+	flag.StringVar(&configFile, "c", "", "path to config file")
+	flag.StringVar(&action, "action", "asd", "action name: countries, leagues")
+	flag.IntVar(&countryId, "country", 0, "country ID")
+	flag.IntVar(&leagueId, "league", 0, "league ID")
+
 	flag.Parse()
-	if flag.NArg() < 1 {
-		log.Fatal("First argument must be path to config file")
-	}
 
 	config = &Config{}
-	if _, err := toml.DecodeFile(flag.Arg(0), &config); err != nil {
+	if _, err := toml.DecodeFile(configFile, &config); err != nil {
 		log.Fatalf("Cannot read config file %s: %s", flag.Arg(0), err)
 	}
 }
