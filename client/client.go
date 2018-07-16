@@ -137,6 +137,39 @@ func (c *client) GetEvents(from, to string, countryId, leagueId, matchId int) ([
 	return events, nil
 }
 
+func (c *client) GetOdds(from, to string, matchId int) ([]Odds, error) {
+	var odds []Odds
+	var params []requestParam
+
+	params = []requestParam{
+		requestParam{
+			name:  "from",
+			value: from,
+		},
+		requestParam{
+			name:  "to",
+			value: to,
+		},
+	}
+	if matchId != 0 {
+		params = append(params, requestParam{
+			name:  "match_id",
+			value: strconv.Itoa(matchId),
+		})
+	}
+
+	resp, err := c.request("get_odds", params)
+	if err != nil {
+		return nil, fmt.Errorf("getting odds: %s", err)
+	}
+
+	if err = json.Unmarshal(resp, &odds); err != nil {
+		return nil, fmt.Errorf("unmarshaling json: %s", err)
+	}
+
+	return odds, nil
+}
+
 func (c *client) request(action string, params []requestParam) ([]byte, error) {
 	httpClient := &http.Client{}
 	u, err := url.Parse(c.url)

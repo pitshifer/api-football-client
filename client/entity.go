@@ -119,3 +119,40 @@ type Statistic struct {
 	Home string
 	Away string
 }
+
+type Odds struct {
+	MatchId   string `json:"match_id"`
+	Bookmaker string `json:"odd_bookmakers"`
+	Date      string `json:"odd_date"`
+	Home      string `json:"odd_1"`
+	Draw      string `json:"odd_x"`
+	Away      string `json:"odd_2"`
+	AH_2p5_H  string `json:"ah-2.5_1"`
+	AH_2p5_A  string `json:"ah-2.5_2"`
+	AH_2_H    string `json:"ah-2_1"`
+	AH_2_A    string `json:"ah-2_2"`
+	AH_1p5_H  string `json:"ah-1.5_1"`
+	AH_1p5_A  string `json:"ah-1.5_2"`
+	AH_1_H    string `json:"ah-1_1"`
+	AH_1_A    string `json:"ah-1_2"`
+	AH0_H     string `json:"ah0_1"`
+	AH0_A     string `json:"ah0_2"`
+	O_0p5     string `json:"o+0.5"`
+	U_0p5     string `json:"u+0.5"`
+	O_1p5     string `json:"o+1.5"`
+	U_1p5     string `json:"u+1.5"`
+	O_2       string `json:"o+2"`
+	U_2       string `json:"u+2"`
+	O_2p5     string `json:"o+2.5"`
+	U_2p5     string `json:"u+2.5"`
+	O_3       string `json:"o+3"`
+	U_3       string `json:"u+3"`
+	O_3p5     string `json:"o+3.5"`
+	U_3p5     string `json:"u+3.5"`
+	O_4p5     string `json:"o+4.5"`
+	U_4p5     string `json:"u+4.5"`
+	O_5p5     string `json:"o+5.5"`
+	U_5p5     string `json:"u+5.5"`
+	BtsYes    string `json:"bts_yes"`
+	BtsNo     string `json:"bts_no"`
+}

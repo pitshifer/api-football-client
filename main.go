@@ -64,6 +64,10 @@ func main() {
 		result, err = apiClient.GetEvents(from, to, countryId, leagueId, matchId)
 		break
 
+	case "odds":
+		result, err = apiClient.GetOdds(from, to, matchId)
+		break
+
 	default:
 		fmt.Println("Not specified an action")
 		os.Exit(0)
